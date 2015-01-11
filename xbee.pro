@@ -6,7 +6,7 @@
 
 QT       += core gui
 QT       += serialport
-QT       += multimedia
+#QT       += multimedia
 CONFIG += console
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets

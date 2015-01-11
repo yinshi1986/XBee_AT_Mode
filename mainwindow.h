@@ -33,6 +33,12 @@ private:
     int m_CycleCounter;
     QElapsedTimer m_RateTimer;
 
+    // Run the Router in a thread
+    void runRouter();
+
+    // Run the Coordinator in a thread
+    void runCoordinator();
+
 };
 
 #endif // MAINWINDOW_H

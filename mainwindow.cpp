@@ -33,20 +33,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     qDebug() << "Welcome to the XBee Qt App...";
 
-    // Get screen coords
-    int width = SCREEN_WIDTH;
-    int height = SCREEN_HEIGHT;
-
-    qDebug() << "Setting Screen to Width: " << width << " and Height: " << height;
-
-    // Resize
-    resize(width, height); // Adafruit piTFT resolution
-
-    // Setup font
-    QFont newFont("FreeSans", 10, QFont::Bold, true);
-    newFont.setPixelSize(10);
-    QApplication::setFont(newFont);
-
     // Set niceness
     setpriority(PRIO_PROCESS, getpid(), -20);
 
@@ -89,6 +75,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     // Print thread scheduling priority
     qDebug() << "Thread priority is " << params.sched_priority;
 
+    // Make the UART Low Latency
+    //system("sudo /bin/setserial /dev/ttyUSB0 low_latency");
+    //system("sudo /bin/setserial /dev/ttyUSB1 low_latency");
+    system("sudo /bin/setserial /dev/AMA0 low_latency");
+    system("sudo sysctl kernel.sched_autogroup_enabled=0");
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -115,18 +107,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
             QByteArray toSend = QByteArray(QString("12345678910111213141516171819202122232425262728293031323334353637383940414243444546").toUtf8());
             //QByteArray toSend = QByteArray(QString("123").toUtf8());
             qint64 amount = m_Router->m_SerialPort.write(toSend,toSend.length());
-            if (amount == -1) {
-                qDebug() << QString("Failed to write the data to port %1, error: %2").arg(QString("Sender")).arg(m_Router->m_SerialPort.errorString()) << endl;
-            } else if (amount != toSend.size()) {
-                qDebug() << QString("Failed to write all the data to port %1, error: %2").arg(QString("Sender")).arg(m_Router->m_SerialPort.errorString()) << endl;
-            } else if (!m_Router->m_SerialPort.waitForBytesWritten(5000)) {
-                qDebug() << QString("Operation timed out or an error occurred for port %1, error: %2").arg(QString("Sender")).arg(m_Router->m_SerialPort.errorString()) << endl;
-            }
-            else {
-                //qDebug() << "Wrote: " <<  amount << " Bytes...";
-            }
+            m_Router->m_SerialPort.waitForBytesWritten(-1);
+//            if (amount == -1) {
+//                qDebug() << QString("Failed to write the data to port %1, error: %2").arg(QString("Sender")).arg(m_Router->m_SerialPort.errorString()) << endl;
+//            } else if (amount != toSend.size()) {
+//                qDebug() << QString("Failed to write all the data to port %1, error: %2").arg(QString("Sender")).arg(m_Router->m_SerialPort.errorString()) << endl;
+//            } else if (!m_Router->m_SerialPort.waitForBytesWritten(5000)) {
+//                qDebug() << QString("Operation timed out or an error occurred for port %1, error: %2").arg(QString("Sender")).arg(m_Router->m_SerialPort.errorString()) << endl;
+//            }
+//            else {
+//                //qDebug() << "Wrote: " <<  amount << " Bytes...";
+//            }
 
-            //usleep(10000); // 10 ms
+//            usleep(100000); // 10 ms
 
             m_BytesSent += amount;
             m_CycleCounter++;
@@ -140,12 +133,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 MainWindow::~MainWindow()
 {
